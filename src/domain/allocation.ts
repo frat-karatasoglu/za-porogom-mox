@@ -114,6 +114,36 @@ export function checkHardRules(
     })
   }
 
+  if (ghost.conditions.noTickingClocks) {
+    rules.push({
+      code: 'clocks',
+      passed: !place.hasTickingClocks,
+      message: place.hasTickingClocks
+        ? 'В здании тикают часы, а заявка их не переносит.'
+        : 'Тикающих часов нет.',
+    })
+  }
+
+  if (ghost.conditions.noBells) {
+    rules.push({
+      code: 'bells',
+      passed: !place.hasBells,
+      message: place.hasBells
+        ? 'На месте есть колокола, а заявка их не переносит.'
+        : 'Колоколов нет.',
+    })
+  }
+
+  if (ghost.conditions.needsDraught) {
+    rules.push({
+      code: 'draught',
+      passed: place.hasDraught,
+      message: place.hasDraught
+        ? 'Сквозняк есть, как и требуется.'
+        : 'Сквозняка нет, а он обязателен.',
+    })
+  }
+
   const { maxLight, maxNoise } = ghost.conditions
   if (maxLight !== null) {
     rules.push({
@@ -308,6 +338,19 @@ export interface AllocationResult {
  * Если место не подошло только из-за занятости, значит по условиям оно
  * годится — причина отказа именно в нехватке мест, а не в конфликте условий.
  */
+/** Состояние нерасселённой заявки, включая «подходящее место есть, но подбор ещё не делали». */
+export type UnplacedStatus = UnplacedReason | 'awaiting'
+
+/**
+ * Полная классификация для интерфейса. Важно отличать заявку, которой просто
+ * ещё не занимались, от той, для которой места действительно нет: иначе
+ * оператор увидит отказ там, где решение ещё не принималось.
+ */
+export function classifyPlacement(evaluations: PlaceEvaluation[]): UnplacedStatus {
+  if (evaluations.some((evaluation) => evaluation.eligible)) return 'awaiting'
+  return classifyUnplaced(evaluations)
+}
+
 export function classifyUnplaced(evaluations: PlaceEvaluation[]): UnplacedReason {
   const blockedOnlyByCapacity = evaluations.some(
     (evaluation) =>

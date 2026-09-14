@@ -2,7 +2,7 @@ import { createSeedData, DATA_VERSION } from '../domain/seed'
 import { todayIso } from '../domain/dates'
 import type { Assignment, BureauData, Ghost, Place } from '../domain/types'
 
-export const STORAGE_KEY = 'mox-ghost-bureau/v1'
+export const STORAGE_KEY = 'mox-ghost-bureau/v2'
 
 /**
  * Хранилище вынесено за интерфейс, чтобы логику загрузки можно было
@@ -62,7 +62,10 @@ function isGhost(value: unknown): value is Ghost {
   const conditions = value.conditions
   return (
     typeof value.id === 'string' &&
+    typeof value.caseNumber === 'string' &&
     typeof value.name === 'string' &&
+    (value.gender === 'm' || value.gender === 'f' || value.gender === 'n') &&
+    typeof value.avatar === 'string' &&
     typeof value.anxiety === 'number' &&
     typeof value.preferredTemp === 'number' &&
     typeof value.deadline === 'string' &&
@@ -70,6 +73,9 @@ function isGhost(value: unknown): value is Ghost {
     typeof conditions.needsAttic === 'boolean' &&
     typeof conditions.fearsMirrors === 'boolean' &&
     typeof conditions.avoidsHumans === 'boolean' &&
+    typeof conditions.noTickingClocks === 'boolean' &&
+    typeof conditions.noBells === 'boolean' &&
+    typeof conditions.needsDraught === 'boolean' &&
     typeof conditions.lovesDamp === 'boolean' &&
     Array.isArray(conditions.forbiddenTypes)
   )
@@ -90,6 +96,9 @@ function isPlace(value: unknown): value is Place {
     typeof value.hasHumans === 'boolean' &&
     typeof value.hasAttic === 'boolean' &&
     typeof value.hasMirrors === 'boolean' &&
+    typeof value.hasTickingClocks === 'boolean' &&
+    typeof value.hasBells === 'boolean' &&
+    typeof value.hasDraught === 'boolean' &&
     isObject(restrictions) &&
     typeof restrictions.closedForIntake === 'boolean'
   )

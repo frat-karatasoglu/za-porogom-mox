@@ -1,21 +1,11 @@
-import type { HardRuleCode, PlaceType, SoftRuleCode } from './types'
+import type { Ghost, HardRuleCode, PlaceType, SoftRuleCode } from './types'
 
 export const PLACE_TYPE_LABELS: Record<PlaceType, string> = {
-  castle: 'Замок',
-  lighthouse: 'Маяк',
-  library: 'Библиотека',
-  theatre: 'Театр',
-  basement: 'Подвал',
-  crypt: 'Крипта',
-}
-
-export const PLACE_TYPE_ICONS: Record<PlaceType, string> = {
-  castle: '🏰',
-  lighthouse: '🗼',
-  library: '📚',
-  theatre: '🎭',
-  basement: '🕯️',
-  crypt: '⚰️',
+  tower: 'Башня',
+  station: 'Вокзал',
+  greenhouse: 'Оранжерея',
+  house: 'Дом',
+  chapel: 'Часовня',
 }
 
 export const PLACE_TYPES = Object.keys(PLACE_TYPE_LABELS) as PlaceType[]
@@ -27,6 +17,9 @@ export const HARD_RULE_LABELS: Record<HardRuleCode, string> = {
   attic: 'Чердак',
   mirrors: 'Зеркала',
   humans: 'Соседство с людьми',
+  clocks: 'Тикающие часы',
+  bells: 'Колокола',
+  draught: 'Сквозняк',
   light: 'Освещённость',
   noise: 'Уровень шума',
   forbiddenType: 'Тип места',
@@ -38,6 +31,83 @@ export const SOFT_RULE_LABELS: Record<SoftRuleCode, string> = {
   humidity: 'Влажность',
   quiet: 'Тишина',
   darkness: 'Темнота',
+}
+
+export interface ConditionLabel {
+  /** Короткая подпись для тесной карточки списка. */
+  short: string
+  /** Полная подпись для карточки заявки. */
+  full: string
+  /** Имя значка рядом с подписью. */
+  icon: ConditionIcon
+}
+
+export type ConditionIcon =
+  | 'clock'
+  | 'bell'
+  | 'wind'
+  | 'people'
+  | 'mirror'
+  | 'attic'
+  | 'drop'
+  | 'moon'
+  | 'sound'
+  | 'ban'
+
+/**
+ * Особые условия заявки в виде читаемых подписей. Список строится ровно
+ * из тех полей, которые проверяет алгоритм, — придумать подпись «из головы»
+ * здесь нельзя.
+ */
+export function conditionLabels(ghost: Ghost): ConditionLabel[] {
+  const { conditions } = ghost
+  const labels: ConditionLabel[] = []
+
+  if (conditions.noTickingClocks) {
+    labels.push({ short: 'Без часов', full: 'Без тикающих часов', icon: 'clock' })
+  }
+  if (conditions.noBells) {
+    labels.push({ short: 'Без колоколов', full: 'Без колоколов', icon: 'bell' })
+  }
+  if (conditions.needsDraught) {
+    labels.push({ short: 'Сквозняк', full: 'Нужен сквозняк', icon: 'wind' })
+  }
+  if (conditions.avoidsHumans) {
+    labels.push({ short: 'Без людей', full: 'Без людей рядом', icon: 'people' })
+  }
+  if (conditions.needsAttic) {
+    labels.push({ short: 'Чердак', full: 'Нужен чердак', icon: 'attic' })
+  }
+  if (conditions.fearsMirrors) {
+    labels.push({ short: 'Без зеркал', full: 'Боится зеркал', icon: 'mirror' })
+  }
+  if (conditions.maxLight !== null) {
+    const short = conditions.maxLight <= 3 ? 'Полумрак' : `Свет ≤ ${conditions.maxLight}`
+    labels.push({
+      short,
+      full: `Освещённость не выше ${conditions.maxLight} из 10`,
+      icon: 'moon',
+    })
+  }
+  if (conditions.maxNoise !== null) {
+    labels.push({
+      short: conditions.maxNoise <= 2 ? 'Тишина' : `Шум ≤ ${conditions.maxNoise}`,
+      full: `Уровень шума не выше ${conditions.maxNoise} из 10`,
+      icon: 'sound',
+    })
+  }
+  if (conditions.lovesDamp) {
+    labels.push({ short: 'Сырость', full: 'Любит сырость (предпочтение)', icon: 'drop' })
+  }
+  for (const type of conditions.forbiddenTypes) {
+    labels.push({
+      short: `Не ${PLACE_TYPE_LABELS[type].toLowerCase()}`,
+      full: `Не селить: ${PLACE_TYPE_LABELS[type].toLowerCase()}`,
+      icon: 'ban',
+    })
+  }
+
+  return labels
 }
 
 /** Шкала 0–10 в словах: используется в карточках мест. */

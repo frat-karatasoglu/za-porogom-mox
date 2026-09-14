@@ -1,5 +1,5 @@
 /**
- * Модель данных бюро переселения привидений.
+ * Модель данных бюро переселения привидений «За порогом».
  *
  * Главное правило модели: занятость мест нигде не хранится. Она всегда
  * вычисляется из списка `assignments`. Благодаря этому повторный автоподбор
@@ -7,13 +7,19 @@
  * прежнее место.
  */
 
-export type PlaceType =
-  | 'castle'
-  | 'lighthouse'
-  | 'library'
-  | 'theatre'
-  | 'basement'
-  | 'crypt'
+export type PlaceType = 'tower' | 'station' | 'greenhouse' | 'house' | 'chapel'
+
+/** Рисунок в карточке заявки: у каждого привидения свой. */
+export type GhostAvatar =
+  | 'postman'
+  | 'archivist'
+  | 'ribbon'
+  | 'sleeper'
+  | 'draught'
+  | 'moth'
+  | 'shawl'
+  | 'inkcloud'
+  | 'plain'
 
 /**
  * Особые условия привидения в структурированном виде: алгоритм проверяет
@@ -26,6 +32,12 @@ export interface GhostConditions {
   fearsMirrors: boolean
   /** Нельзя селить рядом с людьми. */
   avoidsHumans: boolean
+  /** Не переносит тикающих часов. */
+  noTickingClocks: boolean
+  /** Не переносит колоколов. */
+  noBells: boolean
+  /** Нужен сквозняк. */
+  needsDraught: boolean
   /** Любит сырость (предпочтение, а не жёсткое условие). */
   lovesDamp: boolean
   /** Максимально допустимая освещённость, 0–10. `null` — без ограничения. */
@@ -36,10 +48,17 @@ export interface GhostConditions {
   forbiddenTypes: PlaceType[]
 }
 
+/** Род имени: нужен, чтобы подписи вроде «Расселён / Расселена / Расселено» были грамотными. */
+export type GhostGender = 'm' | 'f' | 'n'
+
 export interface Ghost {
   id: string
+  /** Номер дела, под которым заявка проходит по бюро. */
+  caseNumber: string
   /** Имя. */
   name: string
+  gender: GhostGender
+  avatar: GhostAvatar
   /** Уровень тревожности, 1–10. */
   anxiety: number
   /** Любимая температура, °C. */
@@ -79,6 +98,12 @@ export interface Place {
   hasAttic: boolean
   /** Наличие зеркал. */
   hasMirrors: boolean
+  /** В здании тикают часы. */
+  hasTickingClocks: boolean
+  /** В здании есть колокола. */
+  hasBells: boolean
+  /** В помещении гуляет сквозняк. */
+  hasDraught: boolean
   restrictions: PlaceRestrictions
   /** Справочная заметка. Алгоритм её не читает. */
   note: string
@@ -113,6 +138,9 @@ export type HardRuleCode =
   | 'attic'
   | 'mirrors'
   | 'humans'
+  | 'clocks'
+  | 'bells'
+  | 'draught'
   | 'light'
   | 'noise'
   | 'forbiddenType'
