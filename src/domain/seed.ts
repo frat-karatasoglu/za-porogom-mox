@@ -1,0 +1,297 @@
+import { addDays, todayIso } from './dates'
+import type { BureauData, Ghost, Place } from './types'
+
+export const DATA_VERSION = 1
+
+/**
+ * Демо-данные подобраны так, чтобы все обязательные состояния встречались
+ * сразу после первого запуска:
+ *  - «Леди Пенелопа» не проходит нигде (все чердаки либо с зеркалами, либо слишком светлые);
+ *  - «Прачка Марфа» подходит только в подвал, а он к её очереди уже заполнен;
+ *  - «Барнаби Сквозняк» просрочен и обрабатывается первым;
+ *  - «Крипта» закрыта на приём, хотя подходит идеально.
+ */
+
+function buildPlaces(): Place[] {
+  return [
+    {
+      id: 'place-castle',
+      name: 'Замок Вороний Уступ',
+      type: 'castle',
+      capacity: 4,
+      temperature: 4,
+      light: 3,
+      noise: 2,
+      humidity: 70,
+      hasHumans: false,
+      hasAttic: true,
+      hasMirrors: true,
+      restrictions: { maxAnxiety: null, closedForIntake: false },
+      note: 'Просторно и прохладно, но в парадном зале сохранились старые зеркала.',
+    },
+    {
+      id: 'place-lighthouse',
+      name: 'Маяк Седьмого Ветра',
+      type: 'lighthouse',
+      capacity: 2,
+      temperature: 1,
+      light: 9,
+      noise: 6,
+      humidity: 85,
+      hasHumans: false,
+      hasAttic: true,
+      hasMirrors: false,
+      restrictions: { maxAnxiety: 6, closedForIntake: false },
+      note: 'Фонарь горит всю ночь, поэтому смотритель не селит сюда тревожных жильцов.',
+    },
+    {
+      id: 'place-library',
+      name: 'Библиотека Тихого Шёпота',
+      type: 'library',
+      capacity: 3,
+      temperature: 12,
+      light: 5,
+      noise: 1,
+      humidity: 35,
+      hasHumans: true,
+      hasAttic: false,
+      hasMirrors: false,
+      restrictions: { maxAnxiety: 7, closedForIntake: false },
+      note: 'Читальный зал работает днём: люди в здании есть постоянно.',
+    },
+    {
+      id: 'place-theatre',
+      name: 'Заброшенный театр «Лунная ложа»',
+      type: 'theatre',
+      capacity: 3,
+      temperature: 8,
+      light: 2,
+      noise: 4,
+      humidity: 55,
+      hasHumans: false,
+      hasAttic: true,
+      hasMirrors: true,
+      restrictions: { maxAnxiety: null, closedForIntake: false },
+      note: 'Гримёрные зеркала целы, зато чердак над колосниками свободен.',
+    },
+    {
+      id: 'place-basement',
+      name: 'Подвал старой типографии',
+      type: 'basement',
+      capacity: 2,
+      temperature: 6,
+      light: 1,
+      noise: 2,
+      humidity: 90,
+      hasHumans: false,
+      hasAttic: false,
+      hasMirrors: false,
+      restrictions: { maxAnxiety: null, closedForIntake: false },
+      note: 'Самое тёмное и сырое место бюро — и самое востребованное.',
+    },
+    {
+      id: 'place-crypt',
+      name: 'Крипта под часовней',
+      type: 'crypt',
+      capacity: 2,
+      temperature: 2,
+      light: 0,
+      noise: 0,
+      humidity: 80,
+      hasHumans: false,
+      hasAttic: false,
+      hasMirrors: false,
+      restrictions: { maxAnxiety: null, closedForIntake: true },
+      note: 'Идеальные условия, но приём закрыт: своды укрепляют до конца сезона.',
+    },
+  ]
+}
+
+function buildGhosts(today: string): Ghost[] {
+  return [
+    {
+      id: 'ghost-barnaby',
+      name: 'Барнаби Сквозняк',
+      anxiety: 5,
+      preferredTemp: 0,
+      deadline: addDays(today, -4),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: false,
+        avoidsHumans: true,
+        lovesDamp: true,
+        maxLight: 5,
+        maxNoise: 6,
+        forbiddenTypes: [],
+      },
+      note: 'Срок вышел ещё на прошлой неделе: старый дом уже снесли.',
+    },
+    {
+      id: 'ghost-shadow',
+      name: 'Тень из котельной',
+      anxiety: 10,
+      preferredTemp: 6,
+      deadline: addDays(today, 3),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: true,
+        avoidsHumans: true,
+        lovesDamp: true,
+        maxLight: 2,
+        maxNoise: 2,
+        forbiddenTypes: [],
+      },
+      note: 'Появляется только в полной темноте и при полной тишине.',
+    },
+    {
+      id: 'ghost-penelope',
+      name: 'Леди Пенелопа Ржавая',
+      anxiety: 9,
+      preferredTemp: 3,
+      deadline: addDays(today, 5),
+      conditions: {
+        needsAttic: true,
+        fearsMirrors: true,
+        avoidsHumans: true,
+        lovesDamp: true,
+        maxLight: 4,
+        maxNoise: 4,
+        forbiddenTypes: [],
+      },
+      note: 'Требует чердак, но не переносит ни зеркал, ни яркого света.',
+    },
+    {
+      id: 'ghost-matilda',
+      name: 'Матильда фон Гримм',
+      anxiety: 8,
+      preferredTemp: 5,
+      deadline: addDays(today, 6),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: true,
+        avoidsHumans: true,
+        lovesDamp: true,
+        maxLight: 3,
+        maxNoise: 3,
+        forbiddenTypes: [],
+      },
+      note: 'Триста лет прожила в погребе и просит что-то похожее.',
+    },
+    {
+      id: 'ghost-erasmus',
+      name: 'Капитан Эразм Бурый',
+      anxiety: 4,
+      preferredTemp: 2,
+      deadline: addDays(today, 8),
+      conditions: {
+        needsAttic: true,
+        fearsMirrors: false,
+        avoidsHumans: true,
+        lovesDamp: true,
+        maxLight: null,
+        maxNoise: 8,
+        forbiddenTypes: [],
+      },
+      note: 'Бывший моряк: чем выше и ветренее, тем спокойнее.',
+    },
+    {
+      id: 'ghost-marfa',
+      name: 'Прачка Марфа',
+      anxiety: 7,
+      preferredTemp: 8,
+      deadline: addDays(today, 9),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: true,
+        avoidsHumans: true,
+        lovesDamp: true,
+        maxLight: 2,
+        maxNoise: 3,
+        forbiddenTypes: [],
+      },
+      note: 'Условия почти как у Тени из котельной, но очередь до неё доходит позже.',
+    },
+    {
+      id: 'ghost-oswald',
+      name: 'Освальд Тихий',
+      anxiety: 3,
+      preferredTemp: 7,
+      deadline: addDays(today, 12),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: false,
+        avoidsHumans: false,
+        lovesDamp: false,
+        maxLight: 6,
+        maxNoise: 5,
+        forbiddenTypes: [],
+      },
+      note: 'Неприхотлив, соглашается почти на любой вариант.',
+    },
+    {
+      id: 'ghost-guest',
+      name: 'Господин Вечерний Гость',
+      anxiety: 6,
+      preferredTemp: 10,
+      deadline: addDays(today, 15),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: false,
+        avoidsHumans: false,
+        lovesDamp: false,
+        maxLight: null,
+        maxNoise: 5,
+        forbiddenTypes: ['library'],
+      },
+      note: 'В библиотеку не пойдёт: поссорился с тамошним хранителем в 1894 году.',
+    },
+    {
+      id: 'ghost-agatha',
+      name: 'Сестра Агата',
+      anxiety: 2,
+      preferredTemp: 13,
+      deadline: addDays(today, 20),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: false,
+        avoidsHumans: false,
+        lovesDamp: false,
+        maxLight: null,
+        maxNoise: null,
+        forbiddenTypes: [],
+      },
+      note: 'Любит тепло и человеческое присутствие.',
+    },
+    {
+      id: 'ghost-timothy',
+      name: 'Юный Тимоти',
+      anxiety: 1,
+      preferredTemp: 15,
+      deadline: addDays(today, 25),
+      conditions: {
+        needsAttic: false,
+        fearsMirrors: false,
+        avoidsHumans: false,
+        lovesDamp: false,
+        maxLight: null,
+        maxNoise: null,
+        forbiddenTypes: [],
+      },
+      note: 'Самый спокойный жилец бюро.',
+    },
+  ]
+}
+
+/**
+ * Демо-данные генерируются относительно переданной даты, поэтому дедлайны
+ * остаются осмысленными и через неделю после первого открытия.
+ */
+export function createSeedData(today: string = todayIso()): BureauData {
+  return {
+    version: DATA_VERSION,
+    seededAt: today,
+    ghosts: buildGhosts(today),
+    places: buildPlaces(),
+    assignments: [],
+  }
+}
