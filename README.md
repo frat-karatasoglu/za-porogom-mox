@@ -14,7 +14,7 @@
 обработанные краевые состояния и честный AI Worklog прямо внутри интерфейса.
 
 - **Рабочая ссылка:** публикуется через GitHub Pages, см. раздел [Публикация](#публикация).
-- **Репозиторий:** https://github.com/frat-karatasoglu/mox-ghost-relocation-ai
+- **Репозиторий:** https://github.com/frat-karatasoglu/za-porogom-mox
 - **AI Worklog:** вкладка «AI Worklog» внутри самого приложения.
 
 ## Что можно сделать за первую минуту
@@ -308,7 +308,7 @@ npm test
 1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
 2. Дождаться завершения workflow во вкладке **Actions**.
 3. Адрес появится там же и будет иметь вид
-   `https://frat-karatasoglu.github.io/mox-ghost-relocation-ai/`.
+   `https://frat-karatasoglu.github.io/za-porogom-mox/`.
 
 Сборка использует относительные пути (`base: './'`), поэтому одинаково работает и в корне
 домена, и в подкаталоге — при желании `dist/` можно просто выложить на любой статический
