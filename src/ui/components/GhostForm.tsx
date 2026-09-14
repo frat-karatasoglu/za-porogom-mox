@@ -3,7 +3,7 @@ import { addDays, parseIsoDate } from '../../domain/dates'
 import { PLACE_TYPES, PLACE_TYPE_LABELS } from '../../domain/labels'
 import { nextCaseNumber } from '../../domain/seed'
 import type { Ghost, GhostAvatar, GhostGender, PlaceType } from '../../domain/types'
-import { GhostPortrait } from './GhostPortrait'
+import { GHOST_AVATARS, GhostPortrait } from './GhostPortrait'
 
 interface Props {
   /** `null` — создание новой заявки. */
@@ -13,18 +13,6 @@ interface Props {
   onSave: (ghost: Ghost) => void
   onCancel: () => void
 }
-
-const AVATARS: GhostAvatar[] = [
-  'plain',
-  'postman',
-  'archivist',
-  'ribbon',
-  'sleeper',
-  'draught',
-  'moth',
-  'shawl',
-  'inkcloud',
-]
 
 const GENDER_LABELS: Record<GhostGender, string> = {
   m: 'Он (расселён)',
@@ -59,7 +47,7 @@ function toDraft(ghost: Ghost | null, today: string): Draft {
     return {
       name: '',
       gender: 'm',
-      avatar: 'plain',
+      avatar: 'postman',
       anxiety: '5',
       preferredTemp: '10',
       deadline: addDays(today, 14),
@@ -252,19 +240,18 @@ export function GhostForm({ ghost, ghosts, today, onSave, onCancel }: Props) {
       </div>
 
       <div>
-        <div className="section-label">Силуэт в карточке</div>
-        <div className="chips">
-          {AVATARS.map((avatar) => (
+        <div className="section-label">Портрет в карточке</div>
+        <div className="avatar-picker">
+          {GHOST_AVATARS.map((avatar) => (
             <button
               key={avatar}
               type="button"
-              className="icon-btn"
-              style={{ width: 52, height: 52 }}
+              className="avatar-picker__option"
               aria-pressed={draft.avatar === avatar}
-              aria-label={`Силуэт ${avatar}`}
+              aria-label={`Портрет ${avatar}`}
               onClick={() => update('avatar', avatar)}
             >
-              <GhostPortrait kind={avatar} size={40} />
+              <GhostPortrait kind={avatar} size={52} />
             </button>
           ))}
         </div>

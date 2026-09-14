@@ -1,4 +1,4 @@
-﻿import type { UnplacedStatus } from '../../domain/allocation'
+import type { UnplacedStatus } from '../../domain/allocation'
 import { formatDateShort } from '../../domain/dates'
 import type { Ghost } from '../../domain/types'
 import { GhostPortrait } from './GhostPortrait'
@@ -16,6 +16,11 @@ interface Props {
   onSelect: () => void
 }
 
+/**
+ * Карточка дела. Номер, статус, имя, показатели и строка итога стоят в
+ * одних и тех же местах во всех карточках, поэтому длинное имя не сдвигает
+ * остальную разметку.
+ */
 export function GhostCard({
   ghost,
   today,
@@ -30,22 +35,23 @@ export function GhostCard({
 
   return (
     <button type="button" className="case" aria-pressed={selected} onClick={onSelect}>
-      <span className="case__number">Дело {ghost.caseNumber}</span>
-      {selected ? (
-        <span className="case__check">
-          <IconCheck size={13} />
-        </span>
-      ) : null}
+      <span className="case__head">
+        <span className="case__number">Дело {ghost.caseNumber}</span>
+        <Badge tone={status.badgeTone}>{status.badgeText}</Badge>
+      </span>
 
       <span className="case__body">
         <span className="case__portrait">
-          <GhostPortrait kind={ghost.avatar} size={44} />
+          <GhostPortrait kind={ghost.avatar} size={64} />
+          {selected ? (
+            <span className="case__check">
+              <IconCheck size={12} />
+            </span>
+          ) : null}
         </span>
+
         <span className="case__main">
-          <span className="case__title-row">
-            <span className="case__name">{ghost.name}</span>
-            <Badge tone={status.badgeTone}>{status.badgeText}</Badge>
-          </span>
+          <span className="case__name">{ghost.name}</span>
           <span className="case__stats">
             {ghost.preferredTemp}°C · {ghost.anxiety}/10 ·{' '}
             {formatDateShort(ghost.deadline, today)}
@@ -56,7 +62,7 @@ export function GhostCard({
 
       <span className={`case__status case__status--${status.lineTone}`}>
         <StatusIcon size={15} />
-        {status.lineText}
+        <span className="case__status-text">{status.lineText}</span>
       </span>
     </button>
   )

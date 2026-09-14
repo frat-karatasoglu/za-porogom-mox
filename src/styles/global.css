@@ -129,6 +129,13 @@ ul {
   flex: none;
 }
 
+.brand__logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+}
+
 .brand__name {
   font-family: var(--serif);
   font-size: 24px;
@@ -368,10 +375,19 @@ ul {
 }
 
 .section-label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 10px;
+}
+
+.section-label__action {
+  margin-left: auto;
+  padding: 0;
+  font-size: 13px;
 }
 
 .muted {
@@ -753,14 +769,14 @@ ul {
   position: relative;
   width: 100%;
   text-align: left;
-  padding: 13px 14px;
+  padding: 13px 14px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 10px;
   transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
 
@@ -775,34 +791,47 @@ ul {
   box-shadow: 0 0 0 1px var(--brand);
 }
 
-.case__number {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-dim);
+/* Номер слева, статус справа — в каждой карточке на одной и той же линии. */
+.case__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 22px;
 }
 
+.case__number {
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.case__body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.case__portrait {
+  position: relative;
+  flex: none;
+}
+
+/* Отметка выбора не спорит со статусом: она лежит на портрете. */
 .case__check {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 21px;
-  height: 21px;
+  right: -2px;
+  bottom: -2px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--brand);
   color: #fff;
   display: grid;
   place-items: center;
-}
-
-.case__body {
-  display: flex;
-  gap: 11px;
-  align-items: flex-start;
-}
-
-.case__portrait {
-  flex: none;
+  border: 2px solid var(--surface);
 }
 
 .case__main {
@@ -810,21 +839,18 @@ ul {
   flex: 1;
 }
 
-.case__title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .case__name {
+  display: block;
   font-family: var(--serif);
-  font-size: 16.5px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--ink);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .case__stats {
+  display: block;
   margin-top: 4px;
   font-size: 13px;
   color: var(--text-muted);
@@ -844,15 +870,27 @@ ul {
   border: 1px solid var(--border);
   background: var(--surface-muted);
   color: var(--text-muted);
-  font-size: 11.5px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .case__status {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 12.8px;
+  font-size: 13px;
   color: var(--text-muted);
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+}
+
+.case[aria-pressed='true'] .case__status {
+  border-top-color: var(--brand-line);
+}
+
+.case__status-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .case__status--warn {
@@ -863,14 +901,44 @@ ul {
   color: var(--danger);
 }
 
-/* Портрет привидения */
+/* Портрет привидения: одинаковый круг во всех карточках, рисунок не растягивается. */
 .portrait {
+  flex: none;
   border-radius: 50%;
   background: var(--brand-soft);
   border: 1px solid var(--brand-line);
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+
+.portrait img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  display: block;
+}
+
+.avatar-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.avatar-picker__option {
+  padding: 4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: none;
+  line-height: 0;
+}
+
+.avatar-picker__option:hover {
+  border-color: var(--border-strong);
+}
+
+.avatar-picker__option[aria-pressed='true'] {
+  border-color: var(--brand);
 }
 
 /* ---------- Панель дела ---------- */
@@ -904,8 +972,13 @@ ul {
 
 .dossier__name {
   font-family: var(--serif);
-  font-size: 25px;
+  font-size: 24px;
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.dossier__identity > div {
+  min-width: 0;
 }
 
 .dossier__facts {
@@ -950,10 +1023,12 @@ ul {
 }
 
 .dossier__fact-value {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  /* Полная дата обязана держаться в одну строку — год не уезжает вниз. */
+  white-space: nowrap;
 }
 
 .checked-places {
@@ -965,8 +1040,8 @@ ul {
 .checked-place {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 11px 13px;
+  gap: 10px;
+  padding: 9px 11px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface-muted);
@@ -988,15 +1063,19 @@ ul {
 }
 
 .checked-place__name {
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink);
 }
 
+/* Подпись места — одна строка: список остаётся компактным при любом тексте. */
 .checked-place__hint {
   font-size: 12.5px;
   color: var(--text-muted);
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .manual {

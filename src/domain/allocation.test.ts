@@ -36,7 +36,7 @@ function makeGhost(
     caseNumber: 'П-000',
     name: overrides.id,
     gender: 'm',
-    avatar: 'plain',
+    avatar: 'postman',
     anxiety: 5,
     preferredTemp: 5,
     deadline: '2026-09-30',

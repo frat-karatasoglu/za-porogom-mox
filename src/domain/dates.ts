@@ -66,6 +66,14 @@ export function formatDateShort(isoDate: string, today: string): string {
   return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
 }
 
+/** Полная дата в компактной записи: «19 сент. 2026» — помещается в одну строку. */
+export function formatDateFull(isoDate: string): string {
+  const date = parseIsoDate(isoDate)
+  if (!date) return isoDate
+  const short = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  return `${short} ${date.getFullYear()}`
+}
+
 export function formatDate(isoDate: string): string {
   const date = parseIsoDate(isoDate)
   if (!date) return isoDate

@@ -10,7 +10,6 @@ import {
   IconBot,
   IconChart,
   IconClose,
-  IconDoor,
   IconFile,
   IconPin,
   type IconProps,
@@ -38,7 +37,14 @@ export function App() {
       <header className="topbar">
         <div className="topbar__inner">
           <div className="brand">
-            <IconDoor size={34} style={{ color: 'var(--brand)' }} />
+            <img
+              className="brand__logo"
+              src={`${import.meta.env.BASE_URL}logo.png`}
+              alt=""
+              aria-hidden="true"
+              width={40}
+              height={40}
+            />
             <div>
               <div className="brand__name">За порогом</div>
               <div className="brand__tagline">Бюро переселения привидений</div>

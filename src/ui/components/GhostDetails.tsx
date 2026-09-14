@@ -5,7 +5,7 @@ import {
   explainMatch,
   occupancyExcludingGhost,
 } from '../../domain/allocation'
-import { formatDateShort } from '../../domain/dates'
+import { formatDateFull } from '../../domain/dates'
 import { HARD_RULE_LABELS } from '../../domain/labels'
 import type { Assignment, Ghost, Place, PlaceEvaluation } from '../../domain/types'
 import { GhostPortrait } from './GhostPortrait'
@@ -47,6 +47,9 @@ function placeSummary(evaluation: PlaceEvaluation): string {
   return first?.message ?? 'Не подходит по условиям'
 }
 
+/** Сколько мест показывать сразу: список отсортирован, сверху самые подходящие. */
+const VISIBLE_PLACES = 3
+
 export function GhostDetails({
   ghost,
   places,
@@ -60,6 +63,7 @@ export function GhostDetails({
 }: Props) {
   const [choice, setChoice] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [allPlaces, setAllPlaces] = useState(false)
 
   const placesById = new Map(places.map((place) => [place.id, place]))
   const occupancy = occupancyExcludingGhost(assignments, ghost.id)
@@ -82,7 +86,15 @@ export function GhostDetails({
   useEffect(() => {
     setChoice('')
     setMenuOpen(false)
+    setAllPlaces(false)
   }, [ghost.id])
+
+  // Текущее место всегда остаётся на виду, даже если по баллам оно не в тройке.
+  const shownEvaluations = allPlaces
+    ? evaluations
+    : evaluations.filter(
+        (item, index) => index < VISIBLE_PLACES || item.placeId === assignment?.placeId,
+      )
 
   const chosenEvaluation = choice ? evaluationsById.get(choice) : undefined
   const chosenIsCurrent = choice !== '' && assignment?.placeId === choice
@@ -133,7 +145,7 @@ export function GhostDetails({
       ) : null}
 
       <div className="dossier__identity">
-        <GhostPortrait kind={ghost.avatar} size={64} />
+        <GhostPortrait kind={ghost.avatar} size={88} alt={`Портрет: ${ghost.name}`} />
         <div>
           <h2 className="dossier__name">{ghost.name}</h2>
           <div className="chips" style={{ marginTop: 7 }}>
@@ -162,9 +174,7 @@ export function GhostDetails({
           <IconCalendar size={17} className="icon dossier__fact-icon" />
           <div>
             <div className="dossier__fact-label">Срок</div>
-            <div className="dossier__fact-value">
-              {formatDateShort(ghost.deadline, today)}
-            </div>
+            <div className="dossier__fact-value">{formatDateFull(ghost.deadline)}</div>
           </div>
         </div>
       </div>
@@ -206,9 +216,22 @@ export function GhostDetails({
       )}
 
       <div>
-        <div className="section-label">Проверенные места</div>
+        <div className="section-label">
+          Проверенные места
+          {evaluations.length > VISIBLE_PLACES ? (
+            <button
+              type="button"
+              className="link-btn section-label__action"
+              onClick={() => setAllPlaces((open) => !open)}
+            >
+              {allPlaces
+                ? 'Свернуть'
+                : `Показать все (${evaluations.length})`}
+            </button>
+          ) : null}
+        </div>
         <div className="checked-places">
-          {evaluations.map((evaluation) => {
+          {shownEvaluations.map((evaluation) => {
             const place = placesById.get(evaluation.placeId)
             if (!place) return null
             const PlaceIcon = PLACE_TYPE_ICON[place.type]
