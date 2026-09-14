@@ -6,8 +6,9 @@ import {
 } from '../../domain/labels'
 import type { BureauState } from '../../state/useBureau'
 import { PageHead } from '../components/PageHead'
+import { PlaceIllustration } from '../components/PlaceIllustration'
 import { Badge, EmptyState, Meter, type Tone } from '../components/Primitives'
-import { IconPin, IconRotate, PLACE_TYPE_ICON } from '../components/icons'
+import { IconPin, IconRotate } from '../components/icons'
 
 function loadTone(occupied: number, capacity: number): Tone {
   if (occupied > capacity) return 'danger'
@@ -19,11 +20,19 @@ export function PlacesTab({ data, report, actions }: BureauState) {
   const occupancy = computeOccupancy(data.assignments)
   const ghostsById = new Map(data.ghosts.map((ghost) => [ghost.id, ghost]))
 
+  const openCapacity = data.places
+    .filter((place) => !place.restrictions.closedForIntake)
+    .reduce((sum, place) => sum + place.capacity, 0)
+
   const head = (
     <PageHead
       eyebrow="Рабочий стол оператора"
       title="Места переселения"
-      subtitle={`Свободно ${report.freeSlotsTotal} мест из ${data.places.reduce((sum, place) => sum + place.capacity, 0)}`}
+      subtitle={
+        report.closedSlotsTotal > 0
+          ? `Свободно ${report.freeSlotsTotal} из ${openCapacity} мест · ещё ${report.closedSlotsTotal} в местах, закрытых на приём`
+          : `Свободно ${report.freeSlotsTotal} из ${openCapacity} мест`
+      }
     />
   )
 
@@ -57,41 +66,69 @@ export function PlacesTab({ data, report, actions }: BureauState) {
             (assignment) => assignment.placeId === place.id,
           )
           const overloaded = occupied > place.capacity
-          const PlaceIcon = PLACE_TYPE_ICON[place.type]
+          const closed = place.restrictions.closedForIntake
+
+          const params = [
+            { label: 'Температура', value: `${place.temperature} °C` },
+            { label: 'Освещённость', value: `${place.light}/10 · ${describeLevel(place.light)}` },
+            { label: 'Шум', value: `${place.noise}/10 · ${describeLevel(place.noise)}` },
+            { label: 'Влажность', value: `${place.humidity}% · ${describeHumidity(place.humidity)}` },
+          ]
 
           return (
             <article
               key={place.id}
-              className={`card place-card${overloaded ? ' place-card--overloaded' : ''}`}
+              className={`card place-card${overloaded ? ' place-card--overloaded' : ''}${
+                closed ? ' place-card--closed' : ''
+              }`}
             >
               <header className="place-card__head">
-                <span className="place-card__icon">
-                  <PlaceIcon size={22} />
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <PlaceIllustration type={place.type} size={76} />
+                <div className="place-card__title">
                   <div className="place-card__name">{place.name}</div>
                   <div className="place-card__type">{PLACE_TYPE_LABELS[place.type]}</div>
                 </div>
               </header>
 
+              {/*
+                У закрытого места «0 / 2» читалось бы как два свободных места,
+                поэтому статус приёма стоит прямо в строке занятости.
+              */}
               <div>
-                <div className="place-card__occupancy">
-                  <strong>
-                    {occupied} / {place.capacity}
-                  </strong>
-                  <span>{overloaded ? 'превышена вместимость' : 'занято мест'}</span>
-                </div>
+                {closed ? (
+                  <div className="place-card__occupancy place-card__occupancy--closed">
+                    <strong>Приём закрыт</strong>
+                    <span>
+                      {occupied} из {place.capacity} · новых жильцов не принимает
+                    </span>
+                  </div>
+                ) : (
+                  <div className="place-card__occupancy">
+                    <strong>
+                      {occupied} / {place.capacity}
+                    </strong>
+                    <span>
+                      {overloaded
+                        ? 'превышена вместимость'
+                        : occupied >= place.capacity
+                          ? 'мест нет'
+                          : `свободно ${place.capacity - occupied}`}
+                    </span>
+                  </div>
+                )}
                 <Meter
-                  value={place.capacity === 0 ? 1 : occupied / place.capacity}
+                  className={closed ? 'meter--closed' : undefined}
+                  value={closed ? 0 : place.capacity === 0 ? 1 : occupied / place.capacity}
                   tone={loadTone(occupied, place.capacity)}
-                  label={`Заполненность: ${place.name}`}
+                  label={
+                    closed
+                      ? `${place.name}: приём закрыт`
+                      : `Заполненность: ${place.name}`
+                  }
                 />
               </div>
 
               <div className="chips">
-                {place.restrictions.closedForIntake ? (
-                  <Badge tone="warn">Закрыто на приём</Badge>
-                ) : null}
                 {overloaded ? <Badge tone="danger">Перегружено</Badge> : null}
                 {place.restrictions.maxAnxiety !== null ? (
                   <Badge>Тревожность до {place.restrictions.maxAnxiety}</Badge>
@@ -104,37 +141,23 @@ export function PlacesTab({ data, report, actions }: BureauState) {
                 {place.hasHumans ? <Badge>В здании люди</Badge> : null}
               </div>
 
-              <div className="params">
-                <div className="param">
-                  <span className="param__label">Температура</span>
-                  <span className="param__value">{place.temperature} °C</span>
-                </div>
-                <div className="param">
-                  <span className="param__label">Освещённость</span>
-                  <span className="param__value">
-                    {place.light}/10 · {describeLevel(place.light)}
-                  </span>
-                </div>
-                <div className="param">
-                  <span className="param__label">Шум</span>
-                  <span className="param__value">
-                    {place.noise}/10 · {describeLevel(place.noise)}
-                  </span>
-                </div>
-                <div className="param">
-                  <span className="param__label">Влажность</span>
-                  <span className="param__value">
-                    {place.humidity}% · {describeHumidity(place.humidity)}
-                  </span>
-                </div>
-              </div>
+              <dl className="params">
+                {params.map((param) => (
+                  <div key={param.label} className="param">
+                    <dt className="param__label">{param.label}</dt>
+                    <dd className="param__value">{param.value}</dd>
+                  </div>
+                ))}
+              </dl>
 
               {place.note ? <p className="place-note">{place.note}</p> : null}
 
               <div>
                 <div className="section-label">Жильцы</div>
                 {residents.length === 0 ? (
-                  <p className="field__hint">Пока никого не заселили.</p>
+                  <p className="place-empty">
+                    {closed ? 'Никого нет: место закрыто на приём.' : 'Пока никого не заселили.'}
+                  </p>
                 ) : (
                   <div className="residents">
                     {residents.map((assignment) => {

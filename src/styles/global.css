@@ -1166,20 +1166,32 @@ ul {
 
 .place-card__head {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 14px;
+  align-items: center;
 }
 
-.place-card__icon {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-sm);
+/* Рамка иллюстрации одинакова для всех мест, рисунок вписывается без искажений. */
+.place-art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
   background: var(--brand-soft);
   border: 1px solid var(--brand-line);
   color: var(--brand);
-  display: grid;
-  place-items: center;
-  flex: none;
+  overflow: hidden;
+}
+
+.place-art img {
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+  display: block;
+}
+
+.place-card__title {
+  flex: 1;
+  min-width: 0;
 }
 
 .place-card__name {
@@ -1187,19 +1199,22 @@ ul {
   font-size: 18px;
   font-weight: 700;
   color: var(--ink);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .place-card__type {
-  font-size: 12.5px;
-  color: var(--text-dim);
-  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
 }
 
 .place-card__occupancy {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  font-size: 13.5px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 14px;
   color: var(--text-muted);
   margin-bottom: 7px;
 }
@@ -1210,28 +1225,54 @@ ul {
   font-variant-numeric: tabular-nums;
 }
 
+.place-card__occupancy--closed strong {
+  color: var(--warn);
+  font-size: 15px;
+}
+
+/* Закрытое место: полоса заштрихована, чтобы пустая шкала не читалась как свободная. */
+.meter--closed {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--warn-line) 0 6px,
+    var(--warn-soft) 6px 12px
+  );
+}
+
+.place-card--closed {
+  border-color: var(--warn-line);
+}
+
+/* Параметры — одинаковые ячейки «подпись над значением»: значения стоят на одной линии и не переносятся. */
 .params {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 16px;
-  font-size: 13px;
+  gap: 8px;
+  margin: 0;
 }
 
 .param {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  border-bottom: 1px dashed var(--border);
-  padding-bottom: 5px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  min-width: 0;
 }
 
 .param__label {
+  font-size: 12.5px;
   color: var(--text-muted);
 }
 
 .param__value {
+  margin: 2px 0 0;
+  font-size: 14px;
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
 }
 
 .residents {
@@ -1257,9 +1298,14 @@ ul {
 }
 
 .place-note {
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4a5651;
+}
+
+.place-empty {
+  font-size: 13.5px;
   color: var(--text-muted);
-  font-style: italic;
 }
 
 /* ---------- Отчёт ---------- */
@@ -1712,10 +1758,6 @@ ul {
 
   .stat + .stat::before {
     display: none;
-  }
-
-  .params {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .dossier__facts {

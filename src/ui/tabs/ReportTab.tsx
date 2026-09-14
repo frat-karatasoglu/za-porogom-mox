@@ -63,7 +63,12 @@ export function ReportTab({ data, today, report, actions }: BureauState) {
         </div>
         <div className="card kpi">
           <div className="kpi__value">{report.freeSlotsTotal}</div>
-          <div className="kpi__label">Свободных мест всего</div>
+          <div className="kpi__label">
+            Свободных мест для приёма
+            {report.closedSlotsTotal > 0
+              ? ` · ещё ${report.closedSlotsTotal} закрыты`
+              : ''}
+          </div>
         </div>
       </div>
 
@@ -141,8 +146,8 @@ export function ReportTab({ data, today, report, actions }: BureauState) {
                     {load.occupied} / {load.place.capacity}
                   </span>
                   <Meter
-                    className="load-row__meter"
-                    value={load.loadRatio}
+                    className={`load-row__meter${load.closed ? ' meter--closed' : ''}`}
+                    value={load.closed ? 0 : load.loadRatio}
                     tone={load.overloaded ? 'danger' : load.free === 0 ? 'warn' : 'ok'}
                     label={`Заполненность: ${load.place.name}`}
                   />

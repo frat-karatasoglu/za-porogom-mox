@@ -12,7 +12,10 @@ import type { BureauData, Ghost, HardRuleCode, Place } from './types'
 export interface PlaceLoad {
   place: Place
   occupied: number
+  /** Места, куда реально можно заселить: у закрытого на приём места их нет. */
   free: number
+  /** Место закрыто на приём — пустые места в нём недоступны. */
+  closed: boolean
   /** Жильцов больше вместимости: возможно после принудительного размещения. */
   overloaded: boolean
   loadRatio: number
@@ -39,7 +42,10 @@ export interface BureauReport {
   overdue: number
   /** Просроченные заявки, которые до сих пор без места. */
   overdueUnplaced: number
+  /** Свободные места только в открытых на приём местах. */
   freeSlotsTotal: number
+  /** Пустые места в закрытых на приём местах: учитываются отдельно, а не как свободные. */
+  closedSlotsTotal: number
   placeLoads: PlaceLoad[]
   overloadedPlaces: PlaceLoad[]
   problemGhosts: ProblemGhost[]
@@ -80,10 +86,12 @@ export function buildReport(data: BureauData, today: string): BureauReport {
   const placeLoads: PlaceLoad[] = data.places
     .map((place) => {
       const occupied = occupancy.get(place.id) ?? 0
+      const closed = place.restrictions.closedForIntake
       return {
         place,
         occupied,
-        free: Math.max(0, place.capacity - occupied),
+        free: closed ? 0 : Math.max(0, place.capacity - occupied),
+        closed,
         overloaded: occupied > place.capacity,
         loadRatio: place.capacity === 0 ? 1 : occupied / place.capacity,
       }
@@ -110,6 +118,9 @@ export function buildReport(data: BureauData, today: string): BureauReport {
     overdue: data.ghosts.filter((ghost) => daysUntil(ghost.deadline, today) < 0).length,
     overdueUnplaced: problemGhosts.filter((problem) => problem.daysLeft < 0).length,
     freeSlotsTotal: placeLoads.reduce((sum, load) => sum + load.free, 0),
+    closedSlotsTotal: placeLoads
+      .filter((load) => load.closed)
+      .reduce((sum, load) => sum + Math.max(0, load.place.capacity - load.occupied), 0),
     placeLoads,
     overloadedPlaces: placeLoads.filter((load) => load.overloaded),
     problemGhosts,
