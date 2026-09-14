@@ -42,6 +42,9 @@ describe('хранилище состояния', () => {
     const { data, recoveryNotice } = loadBureauData(adapter, '2026-09-14')
 
     expect(recoveryNotice).toContain('Загружены демо-данные')
+    // Техническое сообщение парсера не должно попадать в русскоязычный интерфейс.
+    expect(recoveryNotice).toContain('файл состояния не читается')
+    expect(recoveryNotice).not.toMatch(/JSON at position/)
     expect(data.ghosts.length).toBeGreaterThan(0)
   })
 

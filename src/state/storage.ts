@@ -114,7 +114,13 @@ function isAssignment(value: unknown): value is Assignment {
 }
 
 export function parseBureauData(raw: string): BureauData {
-  const parsed: unknown = JSON.parse(raw)
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    // Сообщение парсера — английское и техническое, оператору оно ничего не даёт.
+    throw new Error('Сохранённые данные повреждены: файл состояния не читается.')
+  }
   if (!isObject(parsed)) throw new Error('Сохранённые данные повреждены: ожидался объект.')
   if (parsed.version !== DATA_VERSION) {
     throw new Error(
