@@ -5,7 +5,7 @@ import {
   explainMatch,
   occupancyExcludingGhost,
 } from '../../domain/allocation'
-import { formatDate } from '../../domain/dates'
+import { formatDateShort } from '../../domain/dates'
 import { HARD_RULE_LABELS } from '../../domain/labels'
 import type { Assignment, Ghost, Place, PlaceEvaluation } from '../../domain/types'
 import { GhostPortrait } from './GhostPortrait'
@@ -162,7 +162,9 @@ export function GhostDetails({
           <IconCalendar size={17} className="icon dossier__fact-icon" />
           <div>
             <div className="dossier__fact-label">Срок</div>
-            <div className="dossier__fact-value">{formatDate(ghost.deadline)}</div>
+            <div className="dossier__fact-value">
+              {formatDateShort(ghost.deadline, today)}
+            </div>
           </div>
         </div>
       </div>

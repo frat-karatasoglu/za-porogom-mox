@@ -54,6 +54,18 @@ export function formatDays(count: number): string {
   return `${abs} дней`
 }
 
+/**
+ * Короткая дата для тесных мест интерфейса: год показывается только тогда,
+ * когда он отличается от текущего, иначе подпись зря переносится на две строки.
+ */
+export function formatDateShort(isoDate: string, today: string): string {
+  const date = parseIsoDate(isoDate)
+  const now = parseIsoDate(today)
+  if (!date) return isoDate
+  if (now && date.getFullYear() !== now.getFullYear()) return formatDate(isoDate)
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+}
+
 export function formatDate(isoDate: string): string {
   const date = parseIsoDate(isoDate)
   if (!date) return isoDate

@@ -1,5 +1,5 @@
 ﻿import type { UnplacedStatus } from '../../domain/allocation'
-import { formatDate } from '../../domain/dates'
+import { formatDateShort } from '../../domain/dates'
 import type { Ghost } from '../../domain/types'
 import { GhostPortrait } from './GhostPortrait'
 import { Badge } from './Primitives'
@@ -47,7 +47,8 @@ export function GhostCard({
             <Badge tone={status.badgeTone}>{status.badgeText}</Badge>
           </span>
           <span className="case__stats">
-            {ghost.preferredTemp}°C · {ghost.anxiety}/10 · {formatDate(ghost.deadline)}
+            {ghost.preferredTemp}°C · {ghost.anxiety}/10 ·{' '}
+            {formatDateShort(ghost.deadline, today)}
           </span>
           <ConditionChips ghost={ghost} variant="short" limit={2} />
         </span>
