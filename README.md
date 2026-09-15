@@ -13,7 +13,7 @@
 Тема сказочная, задача практическая: понятная модель данных, объяснимый алгоритм,
 обработанные краевые состояния и честный AI Worklog прямо внутри интерфейса.
 
-- **Рабочая ссылка:** публикуется через GitHub Pages, см. раздел [Публикация](#публикация).
+- **Рабочая ссылка:** https://frat-karatasoglu.github.io/za-porogom-mox/
 - **Репозиторий:** https://github.com/frat-karatasoglu/za-porogom-mox
 - **AI Worklog:** вкладка «AI Worklog» внутри самого приложения.
 
@@ -340,12 +340,9 @@ npm test
 В репозитории лежит workflow `.github/workflows/deploy.yml`, который на каждый push в `main`
 прогоняет тесты, собирает проект и публикует его на GitHub Pages.
 
-Чтобы ссылка заработала, нужно один раз включить Pages в настройках репозитория:
-
-1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-2. Дождаться завершения workflow во вкладке **Actions**.
-3. Адрес появится там же и будет иметь вид
-   `https://frat-karatasoglu.github.io/za-porogom-mox/`.
+Pages включён в настройках репозитория (**Settings → Pages → Source: GitHub Actions**), приложение
+опубликовано по адресу https://frat-karatasoglu.github.io/za-porogom-mox/. Для форка шаги те же:
+включить Pages с источником GitHub Actions и дождаться завершения workflow во вкладке **Actions**.
 
 Сборка использует относительные пути (`base: './'`), поэтому одинаково работает и в корне
 домена, и в подкаталоге — при желании `dist/` можно просто выложить на любой статический
